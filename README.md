@@ -1,5 +1,7 @@
 # obd-esp32-v1
 
+> **⚠️ Disclaimer:** Dieses Projekt wurde vollständig mit Hilfe von KI-Agenten (GitHub Copilot Coding Agent) erstellt. Der gesamte Code, die Dokumentation und die Konfigurationsdateien wurden durch KI generiert und können Fehler enthalten. Eine sorgfältige Prüfung vor dem produktiven Einsatz wird empfohlen.
+
 DIY OBD-II data logger for the **Hyundai Ioniq 28 kWh (vFL)**.  
 An ESP32 reads BMS data over CAN and streams it via BLE to a Flutter mobile app.
 
