@@ -10,8 +10,34 @@ const String kServiceUuid  = '0000ffe0-0000-1000-8000-00805f9b34fb';
 const String kCharUuid     = '0000ffe1-0000-1000-8000-00805f9b34fb';
 const String kDeviceName   = 'OBD-Ioniq28';
 
+// ---------------------------------------------------------------------------
+// Abstract interface – allows injecting a fake for unit tests.
+// ---------------------------------------------------------------------------
+
+/// Contract that [BatteryProvider] depends on.
+/// The concrete [BleService] implements the real BLE stack; tests can supply
+/// a lightweight fake without a real Bluetooth adapter.
+abstract class BleServiceBase {
+  Stream<BatteryData> get dataStream;
+
+  /// Scans for the ESP32 and returns an opaque device token.
+  Future<Object> scanForDevice({Duration timeout});
+
+  /// Connects to [device] (the token returned by [scanForDevice]).
+  Future<void> connect(Object device);
+
+  /// Disconnects and releases all BLE resources.
+  Future<void> disconnect();
+
+  void dispose();
+}
+
+// ---------------------------------------------------------------------------
+// Real implementation
+// ---------------------------------------------------------------------------
+
 /// Manages BLE scanning, connection, and data parsing.
-class BleService {
+class BleService extends BleServiceBase {
   BluetoothDevice? _device;
   BluetoothCharacteristic? _notifyChar;
   StreamSubscription<List<int>>? _notifySub;
@@ -19,10 +45,12 @@ class BleService {
   final _dataController = StreamController<BatteryData>.broadcast();
 
   /// Stream of parsed [BatteryData] updates from the ESP32.
+  @override
   Stream<BatteryData> get dataStream => _dataController.stream;
 
   /// Starts a BLE scan and resolves with the first matching [BluetoothDevice].
   /// Throws a [TimeoutException] if no device is found within [timeout].
+  @override
   Future<BluetoothDevice> scanForDevice({
     Duration timeout = const Duration(seconds: 15),
   }) async {
@@ -53,12 +81,14 @@ class BleService {
   }
 
   /// Connects to [device], discovers services, and subscribes to notifications.
-  Future<void> connect(BluetoothDevice device) async {
-    _device = device;
+  @override
+  Future<void> connect(Object device) async {
+    final bt = device as BluetoothDevice;
+    _device = bt;
 
-    await device.connect(autoConnect: false);
+    await bt.connect(autoConnect: false);
 
-    final services = await device.discoverServices();
+    final services = await bt.discoverServices();
     for (final service in services) {
       if (service.uuid.toString().toLowerCase() == kServiceUuid) {
         for (final char in service.characteristics) {
@@ -88,6 +118,7 @@ class BleService {
   }
 
   /// Disconnects from the current device and cleans up resources.
+  @override
   Future<void> disconnect() async {
     await _notifySub?.cancel();
     _notifySub = null;
@@ -96,6 +127,7 @@ class BleService {
     _device = null;
   }
 
+  @override
   void dispose() {
     unawaited(disconnect());
     _dataController.close();

@@ -16,7 +16,10 @@ enum DeviceConnectionState {
 /// Central state-management class for BLE and battery data.
 /// Exposed via [ChangeNotifierProvider] from [main.dart].
 class BatteryProvider extends ChangeNotifier {
-  final BleService _ble = BleService();
+  /// Allows injecting a custom [BleServiceBase] (e.g. a fake for tests).
+  BatteryProvider({BleServiceBase? bleService}) : _ble = bleService ?? BleService();
+
+  final BleServiceBase _ble;
 
   BatteryData _data = BatteryData.empty;
   DeviceConnectionState _state = DeviceConnectionState.disconnected;
@@ -50,8 +53,10 @@ class BatteryProvider extends ChangeNotifier {
         notifyListeners();
       });
     } on TimeoutException {
+      await _ble.disconnect();
       _setError('Device not found. Make sure the ESP32 is powered and nearby.');
     } catch (e) {
+      await _ble.disconnect();
       _setError('Connection failed: $e');
     }
   }

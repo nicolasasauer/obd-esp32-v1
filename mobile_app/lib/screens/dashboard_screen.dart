@@ -7,20 +7,30 @@ import '../widgets/soc_gauge.dart';
 import 'scanner_screen.dart';
 
 /// Main dashboard: SOC gauge + detail values list.
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  bool _navigatingBack = false;
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<BatteryProvider>();
     final data = provider.data;
 
-    // Navigate back to scanner if disconnected
-    if (!provider.isConnected) {
+    // Navigate back to scanner if disconnected (guard against multiple calls)
+    if (!provider.isConnected && !_navigatingBack) {
+      _navigatingBack = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const ScannerScreen()),
-        );
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const ScannerScreen()),
+          );
+        }
       });
     }
 

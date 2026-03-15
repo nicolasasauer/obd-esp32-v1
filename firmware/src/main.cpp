@@ -40,7 +40,7 @@ static NimBLECharacteristic* g_notifyChar  = nullptr;
 // BLE server callbacks
 // ---------------------------------------------------------------------------
 class ServerCallbacks : public NimBLEServerCallbacks {
-    void onConnect(NimBLEServer* server) override {
+    void onConnect(NimBLEServer* /*server*/) override {
         g_bleConnected = true;
         Serial.println("[BLE] Client connected");
     }
