@@ -1,0 +1,32 @@
+name: obd_app
+description: OBD-II BLE dashboard for Hyundai Ioniq 28 kWh
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # BLE communication with the ESP32
+  flutter_blue_plus: ^1.32.4
+
+  # State management
+  provider: ^6.1.2
+
+  # JSON parsing
+  # (dart:convert is part of the SDK – no extra package needed)
+
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
